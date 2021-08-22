@@ -68,18 +68,16 @@ public final class SoundPlayer {
     
     private func didFinishLoadingAudioFile(_ file: AVAudioFile, identifier: AudioFileIdentifier) {
         files[identifier] = file
-        print("didFinishLoadingAudioFile \(file.url.lastPathComponent)")
     }
     
     public func playFileWithIdentifier(_ fileIdentifier: AudioFileIdentifier) throws {
         guard isSoundOn else { return }
         guard !isPlaying else { return }
-        let file = files[fileIdentifier]
         
-        guard let audioFile = file else {
+        guard let file = files[fileIdentifier] else {
             throw SoundPlayerError.invalidIdentifier(fileIdentifier)
         }
-        node.scheduleFile(audioFile, at: nil, completionCallbackType: .dataPlayedBack) { [weak self] callbackType in
+        node.scheduleFile(file, at: nil, completionCallbackType: .dataPlayedBack) { [weak self] _ in
             self?.isPlaying = false
         }
 
