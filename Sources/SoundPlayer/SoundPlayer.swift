@@ -1,12 +1,10 @@
 import Cocoa
-import Combine
 import AVFoundation
 
 public enum SoundPlayerError: Error {
     case fileNotFound(String)
     case couldNotLoadAudioFile(String)
     case invalidIdentifier(String)
-    case isPlaying
 }
 
 extension SoundPlayerError: LocalizedError {
@@ -14,10 +12,8 @@ extension SoundPlayerError: LocalizedError {
         switch self {
         case .fileNotFound(let fileName):
             return NSLocalizedString("File \(fileName) not found.", comment: "")
-        case .isPlaying:
-            return NSLocalizedString("AVAudioPlayer is currently playing a sound", comment: "")
         case .couldNotLoadAudioFile(let fileURL):
-            return NSLocalizedString("Could not find file at URL: \(fileURL)", comment: "")
+            return NSLocalizedString("Could not load file at URL: \(fileURL)", comment: "")
         case .invalidIdentifier(let identifier):
             return NSLocalizedString("Invalid audio file identifier: \(identifier)", comment: "")
         }
