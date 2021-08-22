@@ -1,7 +1,7 @@
 # SoundPlayer
 🔊Super simple, low-latency sound player.
 
-This Swift packages is currently being used in one of my apps — [Pasty — Smart Clipboard Manager](https://apps.apple.com/de/app/pasty-smart-clipboard/id1544620654?l=en&mt=12). Feel free to check it 😉
+This Swift packages is currently being used in one of my apps — [Pasty — Smart Clipboard Manager](https://apps.apple.com/de/app/pasty-smart-clipboard/id1544620654?l=en&mt=12). Feel free to check it out 😉
 
 ## How to use
 
