@@ -27,14 +27,14 @@ extension SoundPlayerError: LocalizedError {
 public typealias AudioFileIdentifier = String
 
 public struct AudioFile {
-    public init(fileName: String, fileExtension: String, identifier: AudioFileIdentifier) {
-        self.fileName = fileName
-        self.fileExtension = fileExtension
+    public init(name: String, extension: String, identifier: AudioFileIdentifier) {
+        self.name = name
+        self.extension = `extension`
         self.identifier = identifier
     }
     
-    let fileName: String
-    let fileExtension: String
+    let name: String
+    let `extension`: String
     let identifier: AudioFileIdentifier
 }
 
@@ -54,10 +54,10 @@ public final class SoundPlayer {
     }
     
     public func register(audioFile: AudioFile, fromBundle bundle: Bundle = Bundle.main) throws {
-        if let url = bundle.url(forResource: audioFile.fileName, withExtension: audioFile.fileExtension) {
+        if let url = bundle.url(forResource: audioFile.name, withExtension: audioFile.extension) {
             try load(sound: url, for: audioFile.identifier)
         } else {
-            throw SoundPlayerError.fileNotFound(audioFile.fileName)
+            throw SoundPlayerError.fileNotFound(audioFile.name)
         }
     }
     

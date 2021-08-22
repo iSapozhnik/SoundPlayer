@@ -31,8 +31,8 @@ class ViewController: NSViewController {
     // 3. Register sound files for identifiers, defined above
     private func registerAudioFiles() {
         let audioFiles = [
-            AudioFile(fileName: "copy", fileExtension: "mp3", identifier: .copySound),
-            AudioFile(fileName: "paste", fileExtension: "mp3", identifier: .pasteSound)
+            AudioFile(name: "copy", extension: "mp3", identifier: .copySound),
+            AudioFile(name: "paste", extension: "mp3", identifier: .pasteSound)
         ]
         
         do {
