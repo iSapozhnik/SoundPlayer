@@ -1,5 +1,5 @@
 # SoundPlayer
-🔊Super simple, low-latency sound player.
+🔊 Super simple, low-latency sound player. Follows "fire and forget" idea. Ideal for bringing life to your app`s UI.
 
 This Swift packages is currently being used in one of my apps — [Pasty — Smart Clipboard Manager](https://apps.apple.com/de/app/pasty-smart-clipboard/id1544620654?l=en&mt=12). Feel free to check it out 😉
 
@@ -31,8 +31,8 @@ class ViewController: NSViewController {
     // 3. Register sound files for identifiers, defined above
     private func registerAudioFiles() {
         let audioFiles = [
-            AudioFile(name: "copy", extension: "mp3", identifier: .copySound),
-            AudioFile(name: "paste", extension: "mp3", identifier: .pasteSound)
+            AudioFile(name: "copy", extension: .mp3, identifier: .copySound),
+            AudioFile(name: "paste", extension: .mp3, identifier: .pasteSound)
         ]
         
         do {

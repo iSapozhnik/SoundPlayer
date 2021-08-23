@@ -7,6 +7,23 @@ public enum SoundPlayerError: Error {
     case invalidIdentifier(String)
 }
 
+public enum AudioFileExtension: String {
+    case caf
+    case wav
+    case wave
+    case bwf
+    case aif
+    case aiff
+    case aifc
+    case cdda
+    case amr
+    case mp3
+    case au
+    case snd
+    case ac3
+    case eac3
+}
+
 extension SoundPlayerError: LocalizedError {
     public var errorDescription: String? {
         switch self {
@@ -23,14 +40,14 @@ extension SoundPlayerError: LocalizedError {
 public typealias AudioFileIdentifier = String
 
 public struct AudioFile {
-    public init(name: String, extension: String, identifier: AudioFileIdentifier) {
+    public init(name: String, extension: AudioFileExtension, identifier: AudioFileIdentifier) {
         self.name = name
         self.extension = `extension`
         self.identifier = identifier
     }
     
     let name: String
-    let `extension`: String
+    let `extension`: AudioFileExtension
     let identifier: AudioFileIdentifier
 }
 
@@ -56,7 +73,7 @@ public final class SoundPlayer {
     }
     
     public func register(audioFile: AudioFile, fromBundle bundle: Bundle = Bundle.main) throws {
-        if let url = bundle.url(forResource: audioFile.name, withExtension: audioFile.extension) {
+        if let url = bundle.url(forResource: audioFile.name, withExtension: audioFile.extension.rawValue) {
             try load(sound: url, for: audioFile.identifier)
         } else {
             throw SoundPlayerError.fileNotFound(audioFile.name)
