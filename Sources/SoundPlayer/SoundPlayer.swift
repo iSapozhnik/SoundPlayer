@@ -38,12 +38,18 @@ public final class SoundPlayer {
     public static let shared = SoundPlayer()
     public var isPlaying: Bool = false
     public var isSoundOn: Bool = true
+    public var volume: Float = 1.0 {
+        didSet {
+            node.volume = volume
+        }
+    }
     
     private var files = [String: AVAudioFile]()
     private let engine = AVAudioEngine()
     private let node = AVAudioPlayerNode()
     
     private init() {
+        node.volume = volume
         engine.attach(node)
         engine.connect(node, to: engine.mainMixerNode, format: nil)
         try? engine.start()
