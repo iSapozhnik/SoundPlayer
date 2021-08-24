@@ -70,6 +70,12 @@ public final class SoundPlayer {
         engine.attach(node)
         engine.connect(node, to: engine.mainMixerNode, format: nil)
         try? engine.start()
+        
+        NotificationCenter.default.addObserver(self,
+            selector: #selector(handleConfigurationChange),
+            name: .AVAudioEngineConfigurationChange,
+            object: nil
+        )
     }
     
     public func register(audioFile: AudioFile, fromBundle bundle: Bundle = Bundle.main) throws {
@@ -106,5 +112,11 @@ public final class SoundPlayer {
 
         isPlaying = true
         node.play()
+    }
+    
+    @objc
+    private func handleConfigurationChange() {
+        engine.connect(node, to: engine.mainMixerNode, format: nil)
+        try? engine.start()
     }
 }
