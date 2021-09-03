@@ -5,6 +5,7 @@ public enum SoundPlayerError: Error {
     case fileNotFound(String)
     case couldNotLoadAudioFile(String)
     case invalidIdentifier(String)
+    case couldNotStartEngine(String)
 }
 
 public enum AudioFileExtension: String {
@@ -33,6 +34,8 @@ extension SoundPlayerError: LocalizedError {
             return NSLocalizedString("Could not load file at URL: \(fileURL)", comment: "")
         case .invalidIdentifier(let identifier):
             return NSLocalizedString("Invalid audio file identifier: \(identifier)", comment: "")
+        case .couldNotStartEngine(let error):
+            return NSLocalizedString("Could not start the Engine. Error: \(error)", comment: "")
         }
     }
 }
@@ -110,6 +113,13 @@ public final class SoundPlayer {
             self?.isPlaying = false
         }
 
+        if !engine.isRunning {
+            do {
+                try engine.start()
+            } catch {
+                throw SoundPlayerError.couldNotStartEngine(error.localizedDescription)
+            }
+        }
         isPlaying = true
         node.play()
     }
