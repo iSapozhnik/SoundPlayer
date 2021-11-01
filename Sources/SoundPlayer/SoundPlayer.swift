@@ -3,9 +3,8 @@ import AVFoundation
 
 public enum SoundPlayerError: Error {
     case fileNotFound(String)
-    case couldNotLoadAudioFile(String)
     case invalidIdentifier(String)
-    case couldNotStartEngine(String)
+    case coundNotPlayAudioFile(String)
 }
 
 public enum AudioFileExtension: String {
@@ -30,12 +29,10 @@ extension SoundPlayerError: LocalizedError {
         switch self {
         case .fileNotFound(let fileName):
             return NSLocalizedString("File \(fileName) not found.", comment: "")
-        case .couldNotLoadAudioFile(let fileURL):
-            return NSLocalizedString("Could not load file at URL: \(fileURL)", comment: "")
         case .invalidIdentifier(let identifier):
             return NSLocalizedString("Invalid audio file identifier: \(identifier)", comment: "")
-        case .couldNotStartEngine(let error):
-            return NSLocalizedString("Could not start the Engine. Error: \(error)", comment: "")
+        case .coundNotPlayAudioFile(let fileName):
+            return NSLocalizedString("Could not play file \(fileName).", comment: "")
         }
     }
 }
@@ -55,78 +52,58 @@ public struct AudioFile {
 }
 
 public final class SoundPlayer {
+    typealias AudioFileAndPlayer = (file: AudioFile, player: AVAudioPlayer)
+    
     public static let shared = SoundPlayer()
-    public var isPlaying: Bool = false
     public var isSoundOn: Bool = true
-    public var volume: Float = 1.0 {
+    public var volume: Float {
+        get { _volume }
+        set { _volume = min(1.0, max(0.0, _volume)) }
+    }
+    
+    private var _volume: Float = 1.0 {
         didSet {
-            node.volume = volume
+            concurrentQueue.sync {
+                files.values.forEach { $0.player.volume = _volume }
+            }
         }
     }
     
-    private var files = [String: AVAudioFile]()
-    private let engine = AVAudioEngine()
-    private let node = AVAudioPlayerNode()
+    private var files = [AudioFileIdentifier: AudioFileAndPlayer]()
+    private let concurrentQueue = DispatchQueue(label: "SoundPlayer Files Barrier Queue", attributes: .concurrent)
     
-    private init() {
-        node.volume = volume
-        engine.attach(node)
-        engine.connect(node, to: engine.mainMixerNode, format: nil)
-        try? engine.start()
-        
-        NotificationCenter.default.addObserver(self,
-            selector: #selector(handleConfigurationChange),
-            name: .AVAudioEngineConfigurationChange,
-            object: nil
-        )
-    }
+    private init() {}
     
     public func register(audioFile: AudioFile, fromBundle bundle: Bundle = Bundle.main) throws {
         if let url = bundle.url(forResource: audioFile.name, withExtension: audioFile.extension.rawValue) {
-            try load(sound: url, for: audioFile.identifier)
+            let player = try AVAudioPlayer(contentsOf: url)
+            player.volume = _volume
+            didFinishLoadingAudioPlayer((file: audioFile, player: player), identifier: audioFile.identifier)
         } else {
             throw SoundPlayerError.fileNotFound(audioFile.name)
         }
     }
     
-    private func load(sound url: URL, for identifier: AudioFileIdentifier) throws {
-        do {
-            let file = try AVAudioFile(forReading: url)
-            didFinishLoadingAudioFile(file, identifier: identifier)
-        } catch {
-            throw SoundPlayerError.couldNotLoadAudioFile(url.absoluteString)
-        }
-    }
-    
-    private func didFinishLoadingAudioFile(_ file: AVAudioFile, identifier: AudioFileIdentifier) {
-        files[identifier] = file
-    }
-    
     public func playFileWithIdentifier(_ fileIdentifier: AudioFileIdentifier) throws {
         guard isSoundOn else { return }
-        guard !isPlaying else { return }
         
-        guard let file = files[fileIdentifier] else {
-            throw SoundPlayerError.invalidIdentifier(fileIdentifier)
+        let audioFileAndPlayer = try audioFileAndPlayer(for: fileIdentifier)
+        guard !audioFileAndPlayer.player.isPlaying else { return }
+        if !audioFileAndPlayer.player.play() {
+            throw SoundPlayerError.coundNotPlayAudioFile(audioFileAndPlayer.file.name)
         }
-        node.scheduleFile(file, at: nil, completionCallbackType: .dataPlayedBack) { [weak self] _ in
-            self?.isPlaying = false
-        }
-
-        if !engine.isRunning {
-            do {
-                try engine.start()
-            } catch {
-                throw SoundPlayerError.couldNotStartEngine(error.localizedDescription)
-            }
-        }
-        isPlaying = true
-        node.play()
     }
     
-    @objc
-    private func handleConfigurationChange() {
-        engine.connect(node, to: engine.mainMixerNode, format: nil)
-        try? engine.start()
+    private func didFinishLoadingAudioPlayer(_ audioFileAndPlayer: AudioFileAndPlayer, identifier: AudioFileIdentifier) {
+        concurrentQueue.async(flags: .barrier) { [weak self] in
+            self?.files[identifier] = audioFileAndPlayer
+        }
+    }
+    
+    private func audioFileAndPlayer(for idenfifier: AudioFileIdentifier) throws -> AudioFileAndPlayer {
+        try concurrentQueue.sync {
+            guard let audioFileAndPlayer = self.files[idenfifier] else { throw SoundPlayerError.invalidIdentifier(idenfifier) }
+            return audioFileAndPlayer
+        }
     }
 }
