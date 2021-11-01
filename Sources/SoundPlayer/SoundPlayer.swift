@@ -78,6 +78,7 @@ public final class SoundPlayer {
         if let url = bundle.url(forResource: audioFile.name, withExtension: audioFile.extension.rawValue) {
             let player = try AVAudioPlayer(contentsOf: url)
             player.volume = _volume
+            player.prepareToPlay()
             didFinishLoadingAudioPlayer((file: audioFile, player: player), identifier: audioFile.identifier)
         } else {
             throw SoundPlayerError.fileNotFound(audioFile.name)
